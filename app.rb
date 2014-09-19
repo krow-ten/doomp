@@ -1,21 +1,21 @@
 require 'sinatra'
 require "sinatra/reloader"
 require 'mongo'
+require 'cgi'
 
-
-def mongo 
+def mongo
   begin
     uri  = URI.parse(ENV['MONGOHQ_URL'])
     conn = Mongo::Connection.from_uri(ENV['MONGOHQ_URL'])
-    conn.db(uri.path.gsub(/^\//, ''))   
+    conn.db(uri.path.gsub(/^\//, ''))
   rescue
     Mongo::Connection.new.db('doomp')
   end
 end
 
 def store
-  mongo.collection("store")   
-end 
+  mongo.collection("store")
+end
 
 
 get '/' do
@@ -25,19 +25,19 @@ end
 get '/:name' do
   @doomp = store.find_one( name: params[:name] ) || {'content' => ''}
   erb :default
-end 
+end
 
 get "/:name/raw" do
   doomp = store.find_one( name: params[:name] ) || {'content' => ''}
-  doomp['content']   
-end 
+  doomp['content']
+end
 
 
 post '/:name' do
-  store.update( 
-    { name:  params[:name] },  
-    { '$set' => { name: params[:name], content: params[:content] }}, 
-    { upsert: true} 
+  store.update(
+    { name:  params[:name] },
+    { '$set' => { name: params[:name], content: CGI.escapeHTML(params[:content]) }},
+    { upsert: true}
   )
   "OK"
 end
