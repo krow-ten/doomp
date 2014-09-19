@@ -1,0 +1,79 @@
+<style type="text/css">
+	body {
+		background-color: #222;
+		color: #FDFDFD;
+	}
+
+	textarea {
+		background-color: #222;
+		color: #FDFDFD;
+ 		display: block;
+    	margin: 25px auto 0 auto;
+ 		width: 90%;
+		height: 93%;
+		font-size: 15px;
+		line-height: 1.2;
+		border: none;
+		resize: none;
+		overflow-y: auto;
+	}
+	textarea:focus {
+		outline: none;
+	}
+
+	footer {
+		border-top: 1px solid #777;
+		height: 25px;
+		width: 100%;
+		text-align: center;
+		padding-top: 5px;
+	}
+
+	footer a {
+		color: #f2f4f8;
+		font: 14px sans-serif;
+		text-decoration: none;
+		margin: 10px;
+	}
+</style>
+
+
+<textarea><%= @doomp['content'] %></textarea>
+<footer>
+	<a href='/'>new</a>
+	<a href="/<%= params[:name]%>/raw">raw</a>
+</footer>
+
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script>
+
+	var DOOMP = {
+		changed: false,
+		currentLength: $('textarea').val().length,
+
+		workOutIfChanged: function(newLength) {
+			if(newLength != this.currentLength) {
+				this.changed = true
+				this.currentLength = newLength
+			}
+		},
+
+		saveWhenChanged: function() {
+			if(DOOMP.changed) {
+				$.post( "/<%= params[:name] %>", {content: $('textarea').val()}, function() {
+				  DOOMP.changed = false
+				})
+			}
+		}
+
+	}
+
+	$(function(){
+		setInterval(DOOMP.saveWhenChanged, 3000)
+
+		$( "textarea" ).keyup(function() {
+  			DOOMP.workOutIfChanged($('textarea').val().length)
+		});
+
+	});
+</script>
