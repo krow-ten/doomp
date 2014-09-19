@@ -5,8 +5,8 @@ require 'mongo'
 
 def mongo 
   begin
-    uri  = URI.parse(ENV['MONGOLAB_URI'])
-    conn = Mongo::Connection.from_uri(ENV['MONGOLAB_URI'])
+    uri  = URI.parse(ENV['MONGOHQ_URL'])
+    conn = Mongo::Connection.from_uri(ENV['MONGOHQ_URL'])
     conn.db(uri.path.gsub(/^\//, ''))   
   rescue
     Mongo::Connection.new.db('doomp')
