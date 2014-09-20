@@ -58,7 +58,8 @@ end
 
 helpers do
   def protected! doomp
-    return if doomp && !doomp['protected'] || authorized?
+    return if doomp && !doomp['protected'] 
+    return if authorized?
     headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
     halt 401, "Not authorized\n"
   end
