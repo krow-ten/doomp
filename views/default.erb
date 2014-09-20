@@ -43,9 +43,8 @@
     <a href='/'>new</a>
     <a href="/<%= params[:name]%>/raw">raw</a>
     <% if !@doomp['protected'] %>
-        <a href="/<%= params[:name]%>/protect">protect</a>
+        <a href="/<%= params[:name]%>/protect">protect</a>    
     <% end %>
-    <a href="http://0@0:<%= request['host'] %>">logout</a>
 </footer>
 
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -79,4 +78,9 @@
         });
 
     });
+
+
+
+
+
 </script>
