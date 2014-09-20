@@ -42,6 +42,9 @@
 <footer>
     <a href='/'>new</a>
     <a href="/<%= params[:name]%>/raw">raw</a>
+    <% if !@doomp['protected'] %>
+        <a href="/<%= params[:name]%>/protect">protect</a>
+    <% end %>
 </footer>
 
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
