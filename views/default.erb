@@ -30,21 +30,52 @@
     }
 
     footer a {
-        color: #f2f4f8;
+        color: #F2F4F8;
         font: 14px sans-serif;
         text-decoration: none;
         margin: 10px;
+    }
+
+    footer a:hover {
+        color: #999;
+        text-decoration: dotted;
+    }
+
+    .links {
+        display: none;
+        position: fixed;
+        bottom: 35;
+        right: 0;
+        top: 0;
+        width: 150px;
+        overflow-wrap: break-word;
+        border-left: 1px dotted #333;
+        background-color: #262626;
+        padding: 5px 11px;
+
+    }
+
+    .links a {
+        color: #F1F3E3;
+        font-family: Verdana;
+        font-size: 11px;
+        padding: 5px 0;
+        text-decoration: none;
+        display: block;
+
     }
 </style>
 
 
 <textarea><%= @doomp['content'] %></textarea>
+<div class='links'></div>
 <footer>
     <a href='/'>new</a>
     <a href="/<%= params[:name]%>/raw">raw</a>
     <% if !@doomp['protected'] %>
         <a href="/<%= params[:name]%>/protect">protect</a>    
     <% end %>
+    <a href="#" onclick="toggleLinks(); return false;">links</a>
 </footer>
 
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -71,6 +102,8 @@
     }
 
     $(function(){
+        toggleLinks();    
+
         setInterval(DOOMP.saveWhenChanged, 3000)
 
         $( "textarea" ).keyup(function() {
@@ -80,7 +113,19 @@
     });
 
 
+    function toggleLinks() {
+        $('.links').html('')
 
+        var regexp = /\b(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)[-A-Z0-9+&@#/%=~_|$?!:,.]*[A-Z0-9+&@#\/%=~_|$]/gi    
+        var linkPresent = false; 
+        while ((match = regexp.exec($('textarea').val())) != null) {
+            linkPresent = true;
+            $('.links').append('<a href="'+match+'">'+match+'</a>')
+        }
+        if(linkPresent) {
+            $('.links').animate({width: 'toggle'});
+        }
 
+    }
 
 </script>
