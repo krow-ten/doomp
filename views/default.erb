@@ -75,12 +75,14 @@
     <a href='/'>new</a>
     <a href="/<%= params[:name]%>/raw">raw</a>
     <% if !@doomp['protected'] %>
-        <a href="/<%= params[:name]%>/protect">protect</a>    
+        <a href="#" class=protect onclick="protect(); return false;">protect</a>    
     <% end %>
     <a href="#" onclick="toggleLinks(); return false;">links</a>
 </footer>
 
+
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+
 <script>
     var DOOMP = {
         changed: false,
@@ -114,7 +116,6 @@
 
     });
 
-
     function toggleLinks() {
         $('.links').html('')
 
@@ -128,6 +129,14 @@
             $('.links').animate({width: 'toggle'});
         }
 
+    }
+
+    function protect() {
+        var password = window.prompt('Enter a password');
+        $.post('<%= params[:name] %>/protect', {"password":password})
+        .done(function(){
+            $('.protect').hide();
+        });
     }
 
 </script>

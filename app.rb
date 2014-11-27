@@ -2,6 +2,7 @@ require 'sinatra'
 require "sinatra/reloader"
 require 'mongo'
 require 'cgi'
+enable :sessions
 
 def mongo
   begin
@@ -46,27 +47,41 @@ post '/:name' do
   "OK"
 end
 
-get "/:name/protect" do
+
+post "/:name/protect" do
   store.update(
     { name:  params[:name] },
-    { '$set' => { protected: true }}
+    { '$set' => { protected: true, password: CGI.escapeHTML(params['password']) }},
+    { upsert: true }
   )
-  redirect "/#{params[:name]}"
+  "OK"
+end  
+
+get "/:name/login" do
+  redirect "/#{params['name']}" if session[params['name']]
+  erb :login
 end
 
+post "/:name/login" do
+  name  = params['name'] 
+  doomp = store.find_one( name: name)
+  if params['password'] == doomp['password']
+    session[name] = doomp['password']
+    redirect "/#{name}" 
+  end  
+  redirect "/#{name}/login" 
+end
 
 
 helpers do
   def protected! doomp
     return if !doomp
     return if !doomp['protected'] 
-    return if authorized?
-    headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
-    halt 401, "Not authorized\n"
+    redirect "/#{doomp['name']}/login" unless authenticated?(doomp)
   end
 
-  def authorized?
-    @auth ||=  Rack::Auth::Basic::Request.new(request.env)
-    @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == ['', ENV['PASSWORD']]
+  def authenticated? doomp
+     session[doomp['name']] == doomp['password']
   end
+
 end
