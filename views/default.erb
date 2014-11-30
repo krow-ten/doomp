@@ -82,6 +82,7 @@
 
 
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="//cdn.jsdelivr.net/taboverride/4.0.2/taboverride.min.js"></script>
 
 <script>
     var DOOMP = {
@@ -114,6 +115,8 @@
             DOOMP.workOutIfChanged($('textarea').val().length)
         });
 
+        tabOverride.set($( "textarea" ));
+
     });
 
     function toggleLinks() {
@@ -125,7 +128,7 @@
             linkPresent = true;
             $('.links').append('<a href="'+match+'">'+match+'</a>')
         }
-        if(linkPresent) {
+        if (linkPresent) {
             $('.links').animate({width: 'toggle'});
         }
 
