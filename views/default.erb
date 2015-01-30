@@ -66,9 +66,19 @@
         display: block;
 
     }
+
+    .status {
+        display: none;
+        position: absolute;
+        left: 49%;
+        top: 0;
+        font: 11px sans-serif;
+        color: #777;
+
+    }
 </style>
 
-
+<span class=status>unsaved</span>
 <textarea><%= @doomp['content'] %></textarea>
 <div class='links'></div>
 <footer>
@@ -96,17 +106,18 @@
             if(newLength != this.currentLength) {
                 this.changed = true
                 this.currentLength = newLength
+                $('.status').slideDown();
             }
         },
 
         saveWhenChanged: function() {
-            if(DOOMP.changed) {
+            if (DOOMP.changed) {
                 $.post( "/<%= params[:name] %>", {content: $('textarea').val()}, function() {
                     DOOMP.changed = false
+                     $('.status').slideUp();
                 })
             }
         }
-
     }
 
     $(function(){
