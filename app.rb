@@ -47,18 +47,28 @@ post '/:name' do
   "OK"
 end
 
+get "/:name/protect" do
+  doomp = store.find_one( name: params[:name] )
+  protected! doomp
+  erb :protect
+end
+
 
 post "/:name/protect" do
+  name = params[:name]
   store.update(
-    { name:  params[:name] },
+    { name:  name},
     { '$set' => { protected: true, password: CGI.escapeHTML(params['password']) }},
     { upsert: true }
   )
-  "OK"
+  session[name] = CGI.escapeHTML(params['password'])
+  redirect "/#{name}"
 end  
 
 get "/:name/login" do
-  redirect "/#{params['name']}" if session[params['name']]
+  name  = params['name'] 
+  doomp = store.find_one( name: name)
+  redirect "/#{name}" if !doomp || authenticated?(doomp)
   erb :login
 end
 
@@ -71,6 +81,11 @@ post "/:name/login" do
   end  
   redirect "/#{name}/login" 
 end
+
+get "/:name/logout" do
+  session[params[:name]] = nil
+  redirect "/#{params[:name]}" 
+end  
 
 
 helpers do

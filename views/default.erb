@@ -74,8 +74,11 @@
 <footer>
     <a href='/'>new</a>
     <a href="/<%= params[:name]%>/raw">raw</a>
-    <% if !@doomp['protected'] %>
-        <a href="#" class=protect onclick="protect(); return false;">protect</a>    
+    <% if @doomp['protected'] %>
+        <a href="/<%= params[:name]%>/protect">change password</a>  
+        <a href="/<%= params[:name]%>/logout">logout</a>  
+    <% else %>
+        <a href="/<%= params[:name]%>/protect" class=protect>protect</a>   
     <% end %>
     <a href="#" onclick="toggleLinks(); return false;">links</a>
 </footer>
@@ -132,14 +135,6 @@
             $('.links').animate({width: 'toggle'});
         }
 
-    }
-
-    function protect() {
-        var password = window.prompt('Enter a password');
-        $.post('<%= params[:name] %>/protect', {"password":password})
-        .done(function(){
-            $('.protect').hide();
-        });
     }
 
 </script>
