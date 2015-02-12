@@ -18,6 +18,10 @@ def store
   mongo.collection("store")
 end
 
+before do   
+   headers 'Access-Control-Allow-Origin' => '*'
+end
+
 
 get '/' do
   redirect "/#{('a'..'z').to_a.shuffle.first(6).join}"
