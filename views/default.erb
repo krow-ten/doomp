@@ -117,14 +117,6 @@
                      $('.status').slideUp();
                 })
             }
-        },
- 
-        keepFresh: function() {
-            if (!DOOMP.changed) {
-                $.get("/<%= params[:name] %>/raw", function(content){
-                   $('textarea').val(htmldecode(content)) 
-                })
-            }   
         }
     }
 
@@ -132,7 +124,6 @@
         toggleLinks();    
 
         setInterval(DOOMP.saveWhenChanged, 3000)
-        setInterval(DOOMP.keepFresh, 5000);
 
 
         $( "textarea" ).keyup(function() {
