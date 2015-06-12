@@ -123,7 +123,6 @@
             if (!DOOMP.changed) {
                 $.get("/<%= params[:name] %>/raw", function(content){
                    $('textarea').val(htmldecode(content)) 
-                   setTimeout(DOOMP.keepFresh, 1500);
                 })
             }   
         }
@@ -133,7 +132,7 @@
         toggleLinks();    
 
         setInterval(DOOMP.saveWhenChanged, 3000)
-        DOOMP.keepFresh();
+        setInterval(DOOMP.keepFresh, 1500);
 
 
         $( "textarea" ).keyup(function() {
