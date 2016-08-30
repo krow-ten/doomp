@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 app.get('/:name', (req, res) => {
   db.store.findOne({name: req.params.name}, (err, doomp) => {
     if (err) { console.error(err) }
-    if (!doomp) { doomp = { content: ''} }
+    if (!doomp) { doomp = { name: req.params.name, content: '' } }
     if (redirectToLogin(req, res, doomp)) return;
     res.render('default', {doomp}); 
   })
@@ -32,7 +32,7 @@ app.get('/:name', (req, res) => {
 app.get('/:name/raw', (req, res) => {
   db.store.findOne({name: req.params.name}, (err, doomp) => {
     if (err) { console.error(err) }
-    if (!doomp) { doomp = { content: ''} }
+    if (!doomp) { doomp = { content: '' } }
     if (redirectToLogin(req, res, doomp)) return;
     res.send(doomp.content); 
   })
