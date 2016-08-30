@@ -1,0 +1,29 @@
+{
+  "name": "doomp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krow-ten/doomp.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/krow-ten/doomp/issues"
+  },
+  "homepage": "https://github.com/krow-ten/doomp#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "ejs": "^2.5.1",
+    "express": "^4.14.0",
+    "express-session": "^1.14.1",
+    "helmet": "^2.1.2",
+    "html-escape": "^2.0.0",
+    "mongojs": "^2.4.0"
+  }
+}

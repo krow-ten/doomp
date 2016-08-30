@@ -79,17 +79,17 @@
 </style>
 
 <span class=status>unsaved</span>
-<textarea><%= @doomp['content'] %></textarea>
+<textarea><%- doomp.content %></textarea>
 <div class='links'></div>
 <footer>
     <a href='/'>new</a>
-    <a href="/<%= params[:name]%>/raw">raw</a>
-    <% if @doomp['protected'] %>
-        <a href="/<%= params[:name]%>/protect">change password</a>  
-        <a href="/<%= params[:name]%>/logout">logout</a>  
-    <% else %>
-        <a href="/<%= params[:name]%>/protect" class=protect>protect</a>   
-    <% end %>
+    <a href="/<%= doomp.name%>/raw">raw</a>
+    <% if (doomp.protected) { %>
+        <a href="/<%= doomp.name%>/protect">change password</a>  
+        <a href="/<%= doomp.name%>/logout">logout</a>  
+    <% } else { %>
+        <a href="/<%= doomp.name%>/protect" class=protect>protect</a>   
+    <% } %>
     <a href="#" onclick="toggleLinks(); return false;">links</a>
 </footer>
 
@@ -112,7 +112,7 @@
 
         saveWhenChanged: function() {
             if (DOOMP.changed) {
-                $.post( "/<%= params[:name] %>", {content: $('textarea').val()}, function() {
+                $.post( "/<%= doomp.name %>", {content: $('textarea').val()}, function() {
                     DOOMP.changed = false
                      $('.status').slideUp();
                 })
@@ -149,8 +149,5 @@
 
     }
 
-    function htmldecode(encoded) {
-        return $("<div/>").html(encoded).text();
-    }
 
 </script>
