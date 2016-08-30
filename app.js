@@ -81,9 +81,11 @@ app.get('/:name/login', (req, res) => {
   db.store.findOne({name}, (err, doomp) => {
     if (err) { console.error(err) }
     if (!doomp || isAuthenticated(req.session, doomp)) {
-      res.redirect(`/${name}`)
-    }    
-    res.render('login', {doomp}); 
+      res.redirect(`/${name}`);  
+    } 
+    else {
+      res.render('login', {doomp});       
+    }
   })  
 });
 
