@@ -96,9 +96,11 @@
 
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="//cdn.jsdelivr.net/taboverride/4.0.2/taboverride.min.js"></script>
-
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
 <script>
+    
     var DOOMP = {
+        name: '<%= doomp.name%>',
         changed: false,
         currentLength: $('textarea').val().length,
 
@@ -112,17 +114,24 @@
 
         saveWhenChanged: function() {
             if (DOOMP.changed) {
-                $.post( "/<%= doomp.name %>", {content: $('textarea').val()}, function() {
-                    DOOMP.changed = false
-                     $('.status').slideUp();
+                $.post( '/'+DOOMP.name, {content: $('textarea').val()}, function() {
+                    DOOMP.changed = false                    
+                    $('.status').slideUp();
+                    socket.emit('content', { name: DOOMP.name, content: $('textarea').val() })
                 })
             }
         }
-    }
+    };
+    
+    var socket = io();
+    socket.emit("register", {name: DOOMP.name});
+    socket.on('content', function(content) {
+      $('textarea').val(content);
+    });
 
     $(function(){
         toggleLinks();    
-
+      
         setInterval(DOOMP.saveWhenChanged, 3000)
 
 

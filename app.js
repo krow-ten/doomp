@@ -1,4 +1,5 @@
 var express = require('express');
+const socketIO = require('socket.io');
 var bodyParser = require('body-parser')
 var session = require('express-session');
 var escape = require("html-escape");
@@ -128,6 +129,20 @@ function isAuthenticated(session, doomp) {
 
 
 var port = Number(process.env.PORT || 5000);
-app.listen(port, function() {
+const server = app.listen(port, function() {
   console.log("Listening on " + port);
+});
+
+const io = socketIO(server);
+const clients = {};
+
+io.on('connection', (socket) => {
+  console.log('Client connected');
+  socket.on('disconnect', () => console.log('Client disconnected'));
+  socket.on('register', (data) => {
+    clients[data.name] = { 'socket': socket.id }
+  });
+  socket.on('content', (data) => {
+   io.sockets.connected[clients[data.name].socket].emit('content', data.content);
+  });
 });
