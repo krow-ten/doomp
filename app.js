@@ -20,6 +20,10 @@ app.get('/', (req, res) => {
    res.redirect('/'+(Math.random().toString(36).slice(-5)));
 });
 
+app.get('/:name/manifest.json', (req, res) => {
+   res.render('manifest', {name: req.params.name}); 
+});
+
 app.get('/:name', (req, res) => {
   const name = req.params.name
   getDoomp(name, (doomp) => {

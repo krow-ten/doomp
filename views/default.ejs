@@ -1,11 +1,12 @@
 <meta name="viewport" content="width=device-width">
+<link rel="manifest" href="/<%= doomp.name %>/manifest.json">
 <% include css %>
 
 <span class=status>unsaved</span>
 <textarea><%- doomp.content %></textarea>
 <div class='links'></div>
 <footer>
-    <a href='/'>new</a>
+    <a href='/' class='hide-standalone'>new</a>
     <a href="/<%= doomp.name%>/raw">raw</a>
     <% if (doomp.protected) { %>
         <a href="/<%= doomp.name%>/protect">password</a>  
