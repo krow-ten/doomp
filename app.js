@@ -22,18 +22,15 @@ app.get('/', (req, res) => {
 
 app.get('/:name', (req, res) => {
   const name = req.params.name
-  db.store.findOne({name}, (err, doomp) => {
-    if (err) { console.error(err) }
-    if (!doomp) { doomp = { name: name, content: '' } }
+  getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     res.render('default', {doomp}); 
   })
 });
 
 app.get('/:name/raw', (req, res) => {
-  db.store.findOne({name: req.params.name}, (err, doomp) => {
-    if (err) { console.error(err) }
-    if (!doomp) { doomp = { content: '' } }
+  const name = req.params.name;
+  getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     res.send(doomp.content); 
   })
@@ -41,8 +38,7 @@ app.get('/:name/raw', (req, res) => {
 
 app.post('/:name', (req, res) => {
   const name = req.params.name
-  db.store.findOne({name}, (err, doomp) => {
-    if (err) { console.error(err) }
+  getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     db.store.update(
       { name: name },
@@ -57,8 +53,7 @@ app.post('/:name', (req, res) => {
 
 app.get('/:name/protect', (req, res) => {
   const name = req.params.name
-  db.store.findOne({name}, (err, doomp) => {
-    if (err) { console.error(err) }
+  getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     res.render('protect', {name}); 
   })  
@@ -92,10 +87,9 @@ app.get('/:name/login', (req, res) => {
 });
 
 app.post('/:name/login', (req, res) => {
-const name = req.params.name;
-const password = req.body.password;
-  db.store.findOne({name}, (err, doomp) => {
-    if (err) { console.error(err) }
+  const name = req.params.name;
+  const password = req.body.password;
+  getDoomp(name, (doomp) => {
     if (password === doomp.password) {
       req.session[name] = doomp.password
       res.redirect(`/${name}`)
@@ -112,6 +106,14 @@ app.get('/:name/logout', (req, res) => {
   res.redirect(`/${name}`)
 });
 
+
+function getDoomp(name, callback) {
+  db.store.findOne({name}, (err, doomp) => {
+    if (err) { console.error(err) }
+    if (!doomp) { doomp = { name: name, content: '' } }
+    callback(doomp);
+  })  
+}
 
 function redirectToLogin(req, res, doomp) {
   if (isProtected(doomp) && !isAuthenticated(req.session, doomp)) {
