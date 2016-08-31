@@ -1,19 +1,19 @@
-var express = require('express');
+const express = require('express');
 const socketIO = require('socket.io');
-var bodyParser = require('body-parser')
-var session = require('express-session');
-var escape = require("html-escape");
+const bodyParser = require('body-parser')
+const session = require('express-session');
+const escape = require("html-escape");
 
-var app = express()
+const app = express()
 app.use(require('helmet')());
 app.use(session({name: 'quaker', secret: process.env.SESSION_SECRET || 'ss', resave: true, saveUninitialized: false}));
 app.use(bodyParser.urlencoded({ extended: false }))
 app.set('view engine', 'ejs');
 
-var mongouri = process.env.MONGOHQ_URL
+const mongouri = process.env.MONGOHQ_URL
 console.log(mongouri)
-var mongojs = require('mongojs')
-var db = mongojs(mongouri, ['store'], {})
+const mongojs = require('mongojs')
+const db = mongojs(mongouri, ['store'], {})
 
 
 app.get('/', (req, res) => {
@@ -21,9 +21,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/:name', (req, res) => {
-  db.store.findOne({name: req.params.name}, (err, doomp) => {
+  const name = req.params.name
+  db.store.findOne({name}, (err, doomp) => {
     if (err) { console.error(err) }
-    if (!doomp) { doomp = { name: req.params.name, content: '' } }
+    if (!doomp) { doomp = { name: name, content: '' } }
     if (redirectToLogin(req, res, doomp)) return;
     res.render('default', {doomp}); 
   })
@@ -38,14 +39,14 @@ app.get('/:name/raw', (req, res) => {
   })
 });
 
-
 app.post('/:name', (req, res) => {
-  db.store.findOne({name: req.params.name}, (err, doomp) => {
+  const name = req.params.name
+  db.store.findOne({name}, (err, doomp) => {
     if (err) { console.error(err) }
     if (redirectToLogin(req, res, doomp)) return;
     db.store.update(
-      { name: req.params.name },
-      { $set:  {name: req.params.name, content: escape(req.body.content) }},
+      { name: name },
+      { $set:  {name: name, content: escape(req.body.content) }},
       { upsert: true },
       () => {
         res.send('OK');
@@ -55,16 +56,17 @@ app.post('/:name', (req, res) => {
 });
 
 app.get('/:name/protect', (req, res) => {
-  db.store.findOne({name: req.params.name}, (err, doomp) => {
+  const name = req.params.name
+  db.store.findOne({name}, (err, doomp) => {
     if (err) { console.error(err) }
     if (redirectToLogin(req, res, doomp)) return;
-    res.render('protect', {name: req.params.name}); 
+    res.render('protect', {name}); 
   })  
 });
 
 app.post('/:name/protect', (req, res) => {
-  var name = req.params.name;
-  var password = escape(req.body.password);
+  const name = req.params.name;
+  const password = escape(req.body.password);
   db.store.update(
     { name: name },
     { $set:  { protected: true, password: password }},
@@ -77,7 +79,7 @@ app.post('/:name/protect', (req, res) => {
 });
 
 app.get('/:name/login', (req, res) => {
-  var name = req.params.name;
+  const name = req.params.name;
   db.store.findOne({name}, (err, doomp) => {
     if (err) { console.error(err) }
     if (!doomp || isAuthenticated(req.session, doomp)) {
@@ -90,8 +92,8 @@ app.get('/:name/login', (req, res) => {
 });
 
 app.post('/:name/login', (req, res) => {
-var name = req.params.name;
-var password = req.body.password;
+const name = req.params.name;
+const password = req.body.password;
   db.store.findOne({name}, (err, doomp) => {
     if (err) { console.error(err) }
     if (password === doomp.password) {
@@ -105,7 +107,7 @@ var password = req.body.password;
 });
 
 app.get('/:name/logout', (req, res) => {
-  var name = req.params.name;
+  const name = req.params.name;
   req.session[name] = undefined;
   res.redirect(`/${name}`)
 });
@@ -127,17 +129,13 @@ function isAuthenticated(session, doomp) {
 }
 
 
-var port = Number(process.env.PORT || 5000);
-const server = app.listen(port, function() {
-  console.log("Listening on " + port);
-});
+const port = Number(process.env.PORT || 5000);
+const server = app.listen(port, () => console.log("Listening on " + port));
 
 const io = socketIO(server);
 const clients = {};
 
 io.on('connection', (socket) => {
-  console.log('Client connected');
-  socket.on('disconnect', () => console.log('Client disconnected'));
   socket.on('register', (data) => {
     clients[data.name] = { 'socket': socket.id }
   });

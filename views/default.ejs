@@ -8,7 +8,7 @@
     <a href='/'>new</a>
     <a href="/<%= doomp.name%>/raw">raw</a>
     <% if (doomp.protected) { %>
-        <a href="/<%= doomp.name%>/protect">change password</a>  
+        <a href="/<%= doomp.name%>/protect">password</a>  
         <a href="/<%= doomp.name%>/logout">logout</a>  
     <% } else { %>
         <a href="/<%= doomp.name%>/protect" class=protect>protect</a>   
@@ -29,7 +29,6 @@
 
         workOutIfChanged: function() {
             var newLength = $('textarea').val().length;
-            console.log(newLength, this.currentLength)
             if (newLength != this.currentLength) {
                 this.changed = true
                 this.currentLength = newLength
