@@ -10,7 +10,6 @@ app.use(session({name: 'quaker', secret: process.env.SESSION_SECRET || 'ss', res
 app.use(bodyParser.urlencoded({ extended: false }))
 app.set('view engine', 'ejs');
 
-
 var mongouri = process.env.MONGOHQ_URL
 console.log(mongouri)
 var mongojs = require('mongojs')
@@ -59,7 +58,7 @@ app.get('/:name/protect', (req, res) => {
   db.store.findOne({name: req.params.name}, (err, doomp) => {
     if (err) { console.error(err) }
     if (redirectToLogin(req, res, doomp)) return;
-    res.render('protect', {doomp}); 
+    res.render('protect', {name: req.params.name}); 
   })  
 });
 

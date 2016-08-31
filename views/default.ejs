@@ -1,82 +1,5 @@
 <meta name="viewport" content="width=device-width">
-<style type="text/css">
-    body {
-        background-color: #222;
-        color: #FDFDFD;
-    }
-
-    textarea {
-        background-color: #222;
-        color: #FDFDFD;
-        display: block;
-        margin: 25px auto 0 auto;
-        width: 90%;
-        height: 93%;
-        font-size: 15px;
-        line-height: 1.2;
-        border: none;
-        resize: none;
-        overflow-y: auto;
-    }
-    textarea:focus {
-        outline: none;
-    }
-
-    footer {
-        border-top: 1px solid #777;
-        height: 25px;
-        width: 100%;
-        text-align: center;
-        padding-top: 5px;
-   
-    }
-
-    footer a {
-        color: #999;
-        font: 14px sans-serif;
-        text-decoration: none;
-        margin: 14px;
-    }
-
-    footer a:hover {
-        color: #F2F4F8;
-        text-decoration: dotted;
-    }
-
-    .links {
-        display: none;
-        position: fixed;
-        bottom: 35;
-        right: 0;
-        top: 0;
-        width: 150px;
-        overflow-wrap: break-word;
-        border-left: 1px dotted #333;
-        background-color: #262626;
-        padding: 5px 11px;
-        overflow-y: scroll;
-    }
-
-    .links a {
-        color: #F1F3E3;
-        font-family: Verdana;
-        font-size: 11px;
-        padding: 5px 0;
-        text-decoration: none;
-        display: block;
-
-    }
-
-    .status {
-        display: none;
-        position: absolute;
-        left: 49%;
-        top: 0;
-        font: 11px sans-serif;
-        color: #777;
-
-    }
-</style>
+<% include css %>
 
 <span class=status>unsaved</span>
 <textarea><%- doomp.content %></textarea>
@@ -104,8 +27,10 @@
         changed: false,
         currentLength: $('textarea').val().length,
 
-        workOutIfChanged: function(newLength) {
-            if(newLength != this.currentLength) {
+        workOutIfChanged: function() {
+            var newLength = $('textarea').val().length;
+            console.log(newLength, this.currentLength)
+            if (newLength != this.currentLength) {
                 this.changed = true
                 this.currentLength = newLength
                 $('.status').slideDown();
@@ -136,7 +61,7 @@
 
 
         $( "textarea" ).keyup(function() {
-            DOOMP.workOutIfChanged($('textarea').val().length)
+            DOOMP.workOutIfChanged()
         });
 
         tabOverride.set($( "textarea" ));
