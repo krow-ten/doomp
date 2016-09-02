@@ -152,7 +152,7 @@ io.on('connection', (socket) => {
   });
   socket.on('content', (data) => {
     clients[data.name].forEach((clientSocket) => {
-      if (io.sockets.connected[clientSocket]){
+      if (io.sockets.connected[clientSocket] && socket.id != clientSocket){
         io.sockets.connected[clientSocket].emit('content', data.content);
       }
     })
