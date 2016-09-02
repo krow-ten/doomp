@@ -42,11 +42,12 @@ app.get('/:name/raw', (req, res) => {
 
 app.post('/:name', (req, res) => {
   const name = req.params.name
+  const content = escape(req.body.content)
   getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     db.store.update(
       { name: name },
-      { $set:  {name: name, content: escape(req.body.content) }},
+      { $set:  {name, content }},
       { upsert: true },
       () => {
         res.send('OK');
@@ -134,7 +135,6 @@ function isAuthenticated(session, doomp) {
   return session[doomp.name] == doomp.password
 }
 
-
 const port = Number(process.env.PORT || 5000);
 const server = app.listen(port, () => console.log("Listening on " + port));
 
@@ -143,9 +143,18 @@ const clients = {};
 
 io.on('connection', (socket) => {
   socket.on('register', (data) => {
-    clients[data.name] = { 'socket': socket.id }
+    clients[data.name] ?  clients[data.name].push(socket.id) : (clients[data.name] = [socket.id])
+    socket.on('disconnect', () => {
+      for (var name in clients) {
+        clients[name] = clients[name].filter(socketId => socketId != socket.id)
+      }
+   });
   });
   socket.on('content', (data) => {
-   io.sockets.connected[clients[data.name].socket].emit('content', data.content);
+    clients[data.name].forEach((clientSocket) => {
+      if (io.sockets.connected[clientSocket]){
+        io.sockets.connected[clientSocket].emit('content', data.content);
+      }
+    })
   });
 });

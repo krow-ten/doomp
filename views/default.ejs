@@ -42,7 +42,6 @@
                 $.post( '/'+DOOMP.name, {content: $('textarea').val()}, function() {
                     DOOMP.changed = false                    
                     $('.status').slideUp();
-                    socket.emit('content', { name: DOOMP.name, content: $('textarea').val() })
                 })
             }
         }
@@ -62,6 +61,7 @@
 
         $( "textarea" ).keyup(function() {
             DOOMP.workOutIfChanged()
+            socket.emit('content', { name: DOOMP.name, content: $('textarea').val() })
         });
 
         tabOverride.set($( "textarea" ));
