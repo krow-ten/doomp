@@ -10,25 +10,24 @@ app.use(session({name: 'quaker', secret: process.env.SESSION_SECRET || 'ss', res
 app.use(bodyParser.urlencoded({ extended: false }))
 app.set('view engine', 'ejs');
 
-const mongouri = process.env.MONGOHQ_URL
+var mongouri = process.env.MONGODB_URI
 console.log(mongouri)
-const mongojs = require('mongojs')
-const db = mongojs(mongouri, ['store'], {})
-
+var mongojs = require('mongojs')
+var db = mongojs(mongouri, ['store'], {authMechanism: 'SCRAM-SHA-1'})
 
 app.get('/', (req, res) => {
    res.redirect('/'+(Math.random().toString(36).slice(-5)));
 });
 
 app.get('/:name/manifest.json', (req, res) => {
-   res.render('manifest', {name: req.params.name}); 
+   res.render('manifest', {name: req.params.name});
 });
 
 app.get('/:name', (req, res) => {
   const name = req.params.name
   getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
-    res.render('default', {doomp}); 
+    res.render('default', {doomp});
   })
 });
 
@@ -36,7 +35,7 @@ app.get('/:name/raw', (req, res) => {
   const name = req.params.name;
   getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
-    res.send(doomp.content); 
+    res.send(doomp.content);
   })
 });
 
@@ -60,8 +59,8 @@ app.get('/:name/protect', (req, res) => {
   const name = req.params.name
   getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
-    res.render('protect', {name}); 
-  })  
+    res.render('protect', {name});
+  })
 });
 
 app.post('/:name/protect', (req, res) => {
@@ -75,7 +74,7 @@ app.post('/:name/protect', (req, res) => {
       req.session[name] = password;
       res.redirect(`/${name}`);
     }
-  )  
+  )
 });
 
 app.get('/:name/login', (req, res) => {
@@ -83,12 +82,12 @@ app.get('/:name/login', (req, res) => {
   db.store.findOne({name}, (err, doomp) => {
     if (err) { console.error(err) }
     if (!doomp || isAuthenticated(req.session, doomp)) {
-      res.redirect(`/${name}`);  
-    } 
-    else {
-      res.render('login', {doomp});       
+      res.redirect(`/${name}`);
     }
-  })  
+    else {
+      res.render('login', {doomp});
+    }
+  })
 });
 
 app.post('/:name/login', (req, res) => {
@@ -102,7 +101,7 @@ app.post('/:name/login', (req, res) => {
     else {
       res.redirect(`/${name}/login`);
     }
-  })    
+  })
 });
 
 app.get('/:name/logout', (req, res) => {
@@ -117,7 +116,7 @@ function getDoomp(name, callback) {
     if (err) { console.error(err) }
     if (!doomp) { doomp = { name: name, content: '' } }
     callback(doomp);
-  })  
+  })
 }
 
 function redirectToLogin(req, res, doomp) {
