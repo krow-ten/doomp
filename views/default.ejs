@@ -6,7 +6,7 @@
 <textarea><%- doomp.content %></textarea>
 <div class='links'></div>
 <footer>
-    <a href='/' class='hide-standalone'>new</a>
+    <a href='/<%= doomp.name%>/list'>list</a>
     <a href="/<%= doomp.name%>/raw">raw</a>
     <% if (doomp.protected) { %>
         <a href="/<%= doomp.name%>/protect">password</a>  

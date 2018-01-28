@@ -27,7 +27,32 @@ app.get('/:name', (req, res) => {
   const name = req.params.name
   getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
+    if (doomp.list) {
+      res.redirect('/'+name+'/list');
+    }
     res.render('default', {doomp});
+  })
+});
+
+app.get('/:name/list', (req, res) => {
+  const name = req.params.name
+  getDoomp(name, (doomp) => {
+    if (redirectToLogin(req, res, doomp)) return;
+    res.render('list', {doomp});
+  })
+});
+
+app.get('/:name/unlist', (req, res) => {
+  const name = req.params.name
+  getDoomp(name, (doomp) => {
+    if (redirectToLogin(req, res, doomp)) return;
+    db.store.update(
+      { name: name },
+      { $set:  { list: false }},
+      () => {
+        res.redirect('/'+name);
+      }
+    )
   })
 });
 
@@ -42,11 +67,12 @@ app.get('/:name/raw', (req, res) => {
 app.post('/:name', (req, res) => {
   const name = req.params.name
   const content = escape(req.body.content)
+  const list = req.body.list ? true : false
   getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     db.store.update(
       { name: name },
-      { $set:  {name, content }},
+      { $set:  { name, content, list }},
       { upsert: true },
       () => {
         res.send('OK');
