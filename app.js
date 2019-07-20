@@ -69,7 +69,7 @@ app.get("/:name/raw", (req, res) => {
   getDoomp(name, doomp => {
     if (redirectToLogin(req, res, doomp)) return;
     res.type("text/plain");
-    res.send(ent.decode(doomp.content));
+    res.send(ent.decode(doomp.content || ""));
   });
 });
 
