@@ -60,6 +60,7 @@ app.get('/:name/raw', (req, res) => {
   const name = req.params.name;
   getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
+    res.type('text/plain');
     res.send(doomp.content);
   })
 });
