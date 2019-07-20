@@ -41,6 +41,7 @@ app.get("/:name", (req, res) => {
     if (redirectToLogin(req, res, doomp)) return;
     if (doomp.list) {
       res.redirect("/" + name + "/list");
+      return;
     }
     res.render("default", { doomp });
   });
