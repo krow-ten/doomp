@@ -5,30 +5,29 @@ const session = require("express-session");
 const ent = require("ent");
 
 const app = express();
-app.use(require("helmet")());
+app.use(
+  require("helmet")({
+    contentSecurityPolicy: false,
+  })
+);
 app.use(
   session({
     name: "quaker",
     secret: process.env.SESSION_SECRET || "ss",
     resave: true,
-    saveUninitialized: false
+    saveUninitialized: false,
   })
 );
 app.use(bodyParser.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 
-var mongouri = process.env.MONGODB_URI;
+var mongouri = process.env.DB_URI;
 console.log(mongouri);
 var mongojs = require("mongojs");
-var db = mongojs(mongouri, ["store"], { authMechanism: "SCRAM-SHA-1" });
+var db = mongojs(mongouri, ["store"]);
 
 app.get("/", (req, res) => {
-  res.redirect(
-    "/" +
-      Math.random()
-        .toString(36)
-        .slice(-5)
-  );
+  res.redirect("/" + Math.random().toString(36).slice(-5));
 });
 
 app.get("/:name/manifest.json", (req, res) => {
@@ -37,7 +36,7 @@ app.get("/:name/manifest.json", (req, res) => {
 
 app.get("/:name", (req, res) => {
   const name = req.params.name;
-  getDoomp(name, doomp => {
+  getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     if (doomp.list) {
       res.redirect("/" + name + "/list");
@@ -49,7 +48,7 @@ app.get("/:name", (req, res) => {
 
 app.get("/:name/list", (req, res) => {
   const name = req.params.name;
-  getDoomp(name, doomp => {
+  getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     res.render("list", { doomp });
   });
@@ -57,7 +56,7 @@ app.get("/:name/list", (req, res) => {
 
 app.get("/:name/unlist", (req, res) => {
   const name = req.params.name;
-  getDoomp(name, doomp => {
+  getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     db.store.update({ name: name }, { $set: { list: false } }, () => {
       res.redirect("/" + name);
@@ -67,7 +66,7 @@ app.get("/:name/unlist", (req, res) => {
 
 app.get("/:name/raw", (req, res) => {
   const name = req.params.name;
-  getDoomp(name, doomp => {
+  getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     res.type("text/plain");
     res.send(ent.decode(doomp.content || ""));
@@ -78,7 +77,7 @@ app.post("/:name", (req, res) => {
   const name = req.params.name;
   const content = ent.encode(req.body.content);
   const list = req.body.list ? true : false;
-  getDoomp(name, doomp => {
+  getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     db.store.update(
       { name: name },
@@ -93,7 +92,7 @@ app.post("/:name", (req, res) => {
 
 app.get("/:name/protect", (req, res) => {
   const name = req.params.name;
-  getDoomp(name, doomp => {
+  getDoomp(name, (doomp) => {
     if (redirectToLogin(req, res, doomp)) return;
     res.render("protect", { name });
   });
@@ -130,7 +129,7 @@ app.get("/:name/login", (req, res) => {
 app.post("/:name/login", (req, res) => {
   const name = req.params.name;
   const password = req.body.password;
-  getDoomp(name, doomp => {
+  getDoomp(name, (doomp) => {
     if (password === doomp.password) {
       req.session[name] = doomp.password;
       res.redirect(`/${name}`);
@@ -179,19 +178,21 @@ const server = app.listen(port, () => console.log("Listening on " + port));
 const io = socketIO(server);
 const clients = {};
 
-io.on("connection", socket => {
-  socket.on("register", data => {
+io.on("connection", (socket) => {
+  socket.on("register", (data) => {
     clients[data.name]
       ? clients[data.name].push(socket.id)
       : (clients[data.name] = [socket.id]);
     socket.on("disconnect", () => {
       for (var name in clients) {
-        clients[name] = clients[name].filter(socketId => socketId != socket.id);
+        clients[name] = clients[name].filter(
+          (socketId) => socketId != socket.id
+        );
       }
     });
   });
-  socket.on("content", data => {
-    clients[data.name].forEach(clientSocket => {
+  socket.on("content", (data) => {
+    clients[data.name].forEach((clientSocket) => {
       if (io.sockets.connected[clientSocket] && socket.id != clientSocket) {
         io.sockets.connected[clientSocket].emit("content", data.content);
       }
