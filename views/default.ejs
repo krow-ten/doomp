@@ -9,10 +9,10 @@
     <a href='/<%= doomp.name%>/list'>list</a>
     <a href="/<%= doomp.name%>/raw">raw</a>
     <% if (doomp.protected) { %>
-        <a href="/<%= doomp.name%>/protect">password</a>  
-        <a href="/<%= doomp.name%>/logout">logout</a>  
+    <a href="/<%= doomp.name%>/protect">password</a>
+    <a href="/<%= doomp.name%>/logout">logout</a>
     <% } else { %>
-        <a href="/<%= doomp.name%>/protect" class=protect>protect</a>   
+    <a href="/<%= doomp.name%>/protect" class=protect>protect</a>
     <% } %>
     <a href="#" onclick="toggleLinks(); return false;">links</a>
 </footer>
@@ -22,65 +22,73 @@
 <script src="//cdn.jsdelivr.net/taboverride/4.0.2/taboverride.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
 <script>
-    
+
     var DOOMP = {
         name: '<%= doomp.name%>',
         changed: false,
         currentLength: $('textarea').val().length,
 
-        workOutIfChanged: function() {
+        workOutIfChanged: function () {
             var newLength = $('textarea').val().length;
             if (newLength != this.currentLength) {
                 this.changed = true
                 this.currentLength = newLength
                 $('.status').slideDown();
+                showLinks();
             }
         },
 
-        saveWhenChanged: function() {
+        saveWhenChanged: function () {
             if (DOOMP.changed) {
-                $.post( '/'+DOOMP.name, {content: $('textarea').val()}, function() {
-                    DOOMP.changed = false                    
+                $.post('/' + DOOMP.name, { content: $('textarea').val() }, function () {
+                    DOOMP.changed = false
                     $('.status').slideUp();
                 })
             }
         }
     };
-    
+
     var socket = io();
-    socket.emit("register", {name: DOOMP.name});
-    socket.on('content', function(content) {
-      $('textarea').val(content);
+    socket.emit("register", { name: DOOMP.name });
+    socket.on('content', function (content) {
+        $('textarea').val(content);
     });
 
-    $(function(){
-        toggleLinks();    
-      
+    $(function () {
+        showLinks();
+
         setInterval(DOOMP.saveWhenChanged, 3000)
 
 
-        $( "textarea" ).keyup(function() {
+        $("textarea").keyup(function () {
             DOOMP.workOutIfChanged()
             socket.emit('content', { name: DOOMP.name, content: $('textarea').val() })
         });
 
-        tabOverride.set($( "textarea" ));
+        tabOverride.set($("textarea"));
 
     });
 
-    function toggleLinks() {
+    function showLinks() {
         $('.links').html('')
 
-        var regexp = /\b(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)[-A-Z0-9+&@#/%=~_|$?!:,.]*[A-Z0-9+&@#\/%=~_|$]/gi    
-        var linkPresent = false; 
+        var regexp = /\b(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)[-A-Z0-9+&@#/%=~_|$?!:,.]*[A-Z0-9+&@#\/%=~_|$]/gi
+        var linkPresent = false;
         while ((match = regexp.exec($('textarea').val())) != null) {
             linkPresent = true;
-            $('.links').append('<a href="'+match+'">'+match+'</a>')
-        }
-        if (linkPresent) {
-            $('.links').animate({width: 'toggle'});
+            $('.links').append('<a href="' + match + '">' + match + '</a>')
         }
 
+        if (linkPresent) {
+            $('.links').animate({ width: 'show' });
+        } else {
+            $('.links').animate({ width: 'hide' });
+        }
+
+    }
+
+    function toggleLinks() {
+        $('.links').animate({ width: 'toggle' });
     }
 
 
