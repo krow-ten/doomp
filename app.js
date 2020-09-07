@@ -5,6 +5,8 @@ const session = require("express-session");
 const ent = require("ent");
 
 const app = express();
+const http = require("http").createServer(app);
+
 app.use(
   require("helmet")({
     contentSecurityPolicy: false,
@@ -173,9 +175,9 @@ function isAuthenticated(session, doomp) {
 }
 
 const port = Number(process.env.PORT || 5000);
-const server = app.listen(port, () => console.log("Listening on " + port));
+http.listen(port, () => console.log("Listening on " + port));
 
-const io = socketIO(server);
+const io = socketIO(http);
 const clients = {};
 
 io.on("connection", (socket) => {
