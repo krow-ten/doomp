@@ -48,12 +48,6 @@
         }
     };
 
-    var socket = io();
-    socket.emit("register", { name: DOOMP.name });
-    socket.on('content', function (content) {
-        $('textarea').val(content);
-    });
-
     $(function () {
         showLinks();
 
