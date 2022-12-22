@@ -1,5 +1,4 @@
 const express = require("express");
-const socketIO = require("socket.io");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const ent = require("ent");
@@ -176,28 +175,3 @@ function isAuthenticated(session, doomp) {
 
 const port = Number(process.env.PORT || 5000);
 http.listen(port, () => console.log("Listening on " + port));
-
-const io = socketIO(http);
-const clients = {};
-
-io.on("connection", (socket) => {
-  socket.on("register", (data) => {
-    clients[data.name]
-      ? clients[data.name].push(socket.id)
-      : (clients[data.name] = [socket.id]);
-    socket.on("disconnect", () => {
-      for (var name in clients) {
-        clients[name] = clients[name].filter(
-          (socketId) => socketId != socket.id
-        );
-      }
-    });
-  });
-  socket.on("content", (data) => {
-    clients[data.name].forEach((clientSocket) => {
-      if (io.sockets.connected[clientSocket] && socket.id != clientSocket) {
-        io.sockets.connected[clientSocket].emit("content", data.content);
-      }
-    });
-  });
-});
