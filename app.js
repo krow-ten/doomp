@@ -76,6 +76,7 @@ app.get("/:name/raw", (req, res) => {
 
 app.post("/:name", (req, res) => {
   const name = req.params.name;
+  console.log("req.body.content", req.body.content);
   const content = ent.encode(req.body.content);
   const list = req.body.list ? true : false;
   getDoomp(name, (doomp) => {

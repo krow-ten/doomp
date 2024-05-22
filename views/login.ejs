@@ -1,12 +1,12 @@
-<meta name="viewport" content="width=device-width">
-<% include css %>
+<meta name="viewport" content="width=device-width" />
+<%- include('./css') %>
 
-<div class=content>
-    <form action="/<%= doomp.name %>/login" method=post>
-        <input type=password name=password><br>
-        <input type=submit value=login>
-    </form>
+<div class="content">
+  <form action="/<%= doomp.name %>/login" method="post">
+    <input type="password" name="password" /><br />
+    <input type="submit" value="login" />
+  </form>
 </div>
 <footer class="hide-standalone">
-    <a href='/'>new</a>
+  <a href="/">new</a>
 </footer>

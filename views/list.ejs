@@ -1,219 +1,257 @@
-<meta name="viewport" content="width=device-width">
-<link rel="manifest" href="/<%= doomp.name %>/manifest.json">
-<% include css %>
-<% include icons %>
+<meta name="viewport" content="width=device-width" />
+<link rel="manifest" href="/<%= doomp.name %>/manifest.json" />
+<%- include('./css') %> <%- include('./icons') %>
 <style>
-    .container {
-        width: 90%;
-        height: 93%;
-        overflow-y: auto;
-        margin: 25px auto 0 auto;
-        font-family: sans-serif;
-    }
+  .container {
+    width: 90%;
+    height: 93%;
+    overflow-y: auto;
+    margin: 25px auto 0 auto;
+    font-family: sans-serif;
+  }
 
-    .listtable {
-        width: 100%;
-    }
-    .listtable td {
-        padding: 2px;
-        border: 1px solid transparent;
-        width: 89%;
-    }
+  .listtable {
+    width: 100%;
+  }
+  .listtable td {
+    padding: 2px;
+    border: 1px solid transparent;
+    width: 89%;
+  }
 
-    .listtable td:focus {
-        outline: none;
-        border: 1px solid #444;
-    }
+  .listtable td:focus {
+    outline: none;
+    border: 1px solid #444;
+  }
 
-    .listtable td:last-child {
-        width: 10%;
-        border: 1px solid transparent;
-        cursor: pointer;
-        font-family: 'icomoon';
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
+  .listtable td:last-child {
+    width: 10%;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: "icomoon";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-    textarea.serverContent {
-        display: none;
-    }
+  textarea.serverContent {
+    display: none;
+  }
 </style>
-<span class=status>unsaved</span>
+<span class="status">unsaved</span>
 <div class="container">
-    <table class='listtable'>
-        <tr contenteditable='false'><td contenteditable='true'></td><td></td></tr>
-    </table>
-</div>   
+  <table class="listtable">
+    <tr contenteditable="false">
+      <td contenteditable="true"></td>
+      <td></td>
+    </tr>
+  </table>
+</div>
 <textarea class="serverContent"><%- doomp.content %></textarea>
 <footer>
-    <a href="/<%= doomp.name%>/unlist">unlist</a>
-    <a href="/<%= doomp.name%>/raw">raw</a>
-    <% if (doomp.protected) { %>
-        <a href="/<%= doomp.name%>/protect">password</a>  
-        <a href="/<%= doomp.name%>/logout">logout</a>  
-    <% } else { %>
-        <a href="/<%= doomp.name%>/protect" class=protect>protect</a>   
-    <% } %>
+  <a href="/<%= doomp.name%>/unlist">unlist</a>
+  <a href="/<%= doomp.name%>/raw">raw</a>
+  <% if (doomp.protected) { %>
+  <a href="/<%= doomp.name%>/protect">password</a>
+  <a href="/<%= doomp.name%>/logout">logout</a>
+  <% } else { %>
+  <a href="/<%= doomp.name%>/protect" class="protect">protect</a>
+  <% } %>
 </footer>
-
 
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
 <script>
+  function emptyRowHtml() {
+    return "<tr contenteditable='false'><td contenteditable='true'></td><td class='listRowStatus'></td></tr>";
+  }
 
-    function emptyRowHtml() {
-        return "<tr contenteditable='false'><td contenteditable='true'></td><td class='listRowStatus'></td></tr>";
+  function renderContent(content) {
+    try {
+      $(".listtable").html("");
+      var parsedContent = JSON.parse(content);
+      parsedContent.forEach(function (e) {
+        $(".listtable").append(
+          "<tr contenteditable='false'><td contenteditable='true'>" +
+            e[0] +
+            "</td><td class='listRowStatus'>" +
+            e[1] +
+            "</td></tr>"
+        );
+      });
+    } catch (e) {
+      content.split("\n").forEach(function (line) {
+        var statusIcon = line.length ? "&#xea53;" : "";
+        $(".listtable").append(
+          "<tr contenteditable='false'><td contenteditable='true'>" +
+            line +
+            "</td><td class='listRowStatus'>" +
+            statusIcon +
+            "</td></tr>"
+        );
+      });
+      // $('.listtable').append(emptyRowHtml());
+      $(".listtable tr").last().children("td")[0].focus();
     }
+  }
+  renderContent($(".serverContent").val());
 
-    function renderContent(content) {
-        try {
-            $('.listtable').html("");
-            var parsedContent = JSON.parse(content);
-            parsedContent.forEach(function(e) {             
-                $('.listtable').append("<tr contenteditable='false'><td contenteditable='true'>"+e[0]+"</td><td class='listRowStatus'>"+e[1]+"</td></tr>")
-            });         
-        } catch (e) {
-            content.split('\n').forEach(function(line) {
-                var statusIcon = line.length ? "&#xea53;" : '';         
-                $('.listtable').append("<tr contenteditable='false'><td contenteditable='true'>"+line+"</td><td class='listRowStatus'>"+statusIcon+"</td></tr>")
-            });         
-            // $('.listtable').append(emptyRowHtml());
-            $('.listtable tr').last().children('td')[0].focus();
-        }
+  function getContent() {
+    var content = $(".listtable tr")
+      .map(function () {
+        return [
+          $(this)
+            .children("td")
+            .map(function () {
+              return $(this).html();
+            })
+            .get(),
+        ];
+      })
+      .get();
+    return JSON.stringify(content);
+  }
+
+  var DOOMP = {
+    name: "<%= doomp.name%>",
+    changed: false,
+    lastSavedContent: getContent(),
+
+    workOutIfChanged: function () {
+      var newContent = getContent();
+      if (newContent != this.lastSavedContent) {
+        this.changed = true;
+        this.lastSavedContent = newContent;
+        $(".status").slideDown();
+      }
+    },
+
+    saveWhenChanged: function () {
+      if (DOOMP.changed) {
+        $.post(
+          "/" + DOOMP.name,
+          { list: true, content: getContent() },
+          function () {
+            DOOMP.changed = false;
+            $(".status").slideUp();
+          }
+        );
+      }
+    },
+  };
+
+  function setCaretToEnd(target) {
+    var range = document.createRange();
+    var sel = window.getSelection();
+    range.selectNodeContents(target);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    target.focus();
+  }
+
+  function setCaretToPosition(target, position) {
+    target.focus();
+    if (!target.firstChild) return;
+    if (position > target.firstChild.length) {
+      position = target.firstChild.length;
     }
-    renderContent($('.serverContent').val());
+    window.getSelection().collapse(target.firstChild, position);
+  }
 
-    function getContent() {
-        var content = $('.listtable tr').map(function() {
-            return [$(this).children('td').map(function(){ 
-                    return $(this).html()
-                }).get()];    
-        }).get();
-        return JSON.stringify(content);
-    }
-    
-    var DOOMP = {
-        name: '<%= doomp.name%>',
-        changed: false,
-        lastSavedContent: getContent(),
+  function getNextStatus(current) {
+    var statuses = ["\uea53", "\uea52", "\uea08"];
+    var newIndex =
+      statuses.indexOf(current) === statuses.length - 1
+        ? 0
+        : statuses.indexOf(current) + 1;
+    return statuses[newIndex];
+  }
 
-        workOutIfChanged: function() {
-            var newContent = getContent();
-            if (newContent != this.lastSavedContent) {
-                this.changed = true
-                this.lastSavedContent = newContent;
-                $('.status').slideDown();
-            }
-        },
+  $(function () {
+    setInterval(DOOMP.saveWhenChanged, 3000);
 
-        saveWhenChanged: function() {
-            if (DOOMP.changed) {
-                $.post( '/'+DOOMP.name, { list: true, content: getContent() }, function() {
-                    DOOMP.changed = false                    
-                    $('.status').slideUp();
-                })
-            }
-        }
-    };
+    setCaretToEnd($(".listtable tr").last().children("td")[0]);
 
-    function setCaretToEnd(target) {
-        var range = document.createRange();
-        var sel = window.getSelection();
-        range.selectNodeContents(target);
-        range.collapse(false);
-        sel.removeAllRanges();
-        sel.addRange(range);
-        target.focus();
-    }
-
-    function setCaretToPosition(target, position) {
-        target.focus();
-        if (!target.firstChild) return;
-        if (position > target.firstChild.length) {
-            position = target.firstChild.length
-        }
-        window.getSelection().collapse(target.firstChild, position); 
-    }
-
-    function getNextStatus(current) {
-        var statuses = ["\uea53", "\uea52", "\uea08"]
-        var newIndex = statuses.indexOf(current) === statuses.length-1 ?  0 : statuses.indexOf(current) + 1; 
-        return statuses[newIndex];
-    }
-    
-    $(function(){
-        setInterval(DOOMP.saveWhenChanged, 3000)
-
-        setCaretToEnd($('.listtable tr').last().children('td')[0]);
-
-        $('.listtable').on('click', '.listRowStatus', function(e){
-            $(e.currentTarget).html(getNextStatus($(e.currentTarget).html())); 
-            DOOMP.workOutIfChanged()
-            socket.emit('content', { name: DOOMP.name, content: getContent() })
-        });
-
-        $( ".listtable").on('keydown', 'td', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                if (window.getSelection().baseOffset === 0) {
-                    $(emptyRowHtml()).insertBefore($(this).closest('tr')) 
-                } else {
-                    $(emptyRowHtml()).insertAfter($(this).closest('tr'))
-                    var nextRow = $(this).closest('tr').next('tr');
-                    nextRow.children('td')[0].focus();   
-                }
-            }
-
-            if (e.key === 'Backspace') { 
-                var prevTd = $(e.currentTarget).closest('tr').prev('tr').children('td')[0];
-                if ($(e.currentTarget).html().length === 0 && prevTd) {
-                    e.preventDefault();
-                    setCaretToEnd(prevTd);
-                    $(e.currentTarget).closest('tr').remove();
-                } else if (window.getSelection().baseOffset === 0) {
-                    e.preventDefault();
-                    if ($(prevTd).html().length === 0) {
-                        $(prevTd).closest('tr').remove();
-                    } else {
-                        setCaretToEnd(prevTd);
-                    }
-                }
-            }
-
-            if (e.key === 'ArrowUp') { 
-                e.preventDefault();
-                var prevTd = $(e.currentTarget).closest('tr').prev('tr').children('td')[0]
-                if (prevTd) { 
-                    setCaretToPosition(prevTd, window.getSelection().baseOffset)
-                } else {
-                    document.body.focus();
-                    e.currentTarget.focus();
-                }
-            }
-
-            if (e.key === 'ArrowDown') { 
-                e.preventDefault();
-                var nextTd = $(e.currentTarget).closest('tr').next('tr').children('td')[0]
-                if (nextTd) { 
-                    setCaretToPosition(nextTd, window.getSelection().baseOffset)
-                } else {
-                    setCaretToEnd(e.currentTarget)
-                }
-            }
-        });
-
-        $( ".listtable").on('keyup', 'td', function(e) {
-            if ($(e.currentTarget).html().length > 0 && $(e.currentTarget).siblings()[0].innerHTML === '') {
-                $(e.currentTarget).siblings()[0].innerHTML = "&#xea53;";
-            }
-            DOOMP.workOutIfChanged()
-            socket.emit('content', { name: DOOMP.name, content: getContent() })
-        });
+    $(".listtable").on("click", ".listRowStatus", function (e) {
+      $(e.currentTarget).html(getNextStatus($(e.currentTarget).html()));
+      DOOMP.workOutIfChanged();
+      socket.emit("content", { name: DOOMP.name, content: getContent() });
     });
 
-    var socket = io();
-    socket.emit("register", {name: DOOMP.name});
-    socket.on('content', function(content) {
-        renderContent(content);
+    $(".listtable").on("keydown", "td", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (window.getSelection().baseOffset === 0) {
+          $(emptyRowHtml()).insertBefore($(this).closest("tr"));
+        } else {
+          $(emptyRowHtml()).insertAfter($(this).closest("tr"));
+          var nextRow = $(this).closest("tr").next("tr");
+          nextRow.children("td")[0].focus();
+        }
+      }
+
+      if (e.key === "Backspace") {
+        var prevTd = $(e.currentTarget)
+          .closest("tr")
+          .prev("tr")
+          .children("td")[0];
+        if ($(e.currentTarget).html().length === 0 && prevTd) {
+          e.preventDefault();
+          setCaretToEnd(prevTd);
+          $(e.currentTarget).closest("tr").remove();
+        } else if (window.getSelection().baseOffset === 0) {
+          e.preventDefault();
+          if ($(prevTd).html().length === 0) {
+            $(prevTd).closest("tr").remove();
+          } else {
+            setCaretToEnd(prevTd);
+          }
+        }
+      }
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        var prevTd = $(e.currentTarget)
+          .closest("tr")
+          .prev("tr")
+          .children("td")[0];
+        if (prevTd) {
+          setCaretToPosition(prevTd, window.getSelection().baseOffset);
+        } else {
+          document.body.focus();
+          e.currentTarget.focus();
+        }
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        var nextTd = $(e.currentTarget)
+          .closest("tr")
+          .next("tr")
+          .children("td")[0];
+        if (nextTd) {
+          setCaretToPosition(nextTd, window.getSelection().baseOffset);
+        } else {
+          setCaretToEnd(e.currentTarget);
+        }
+      }
     });
+
+    $(".listtable").on("keyup", "td", function (e) {
+      if (
+        $(e.currentTarget).html().length > 0 &&
+        $(e.currentTarget).siblings()[0].innerHTML === ""
+      ) {
+        $(e.currentTarget).siblings()[0].innerHTML = "&#xea53;";
+      }
+      DOOMP.workOutIfChanged();
+      socket.emit("content", { name: DOOMP.name, content: getContent() });
+    });
+  });
+
+  var socket = io();
+  socket.emit("register", { name: DOOMP.name });
+  socket.on("content", function (content) {
+    renderContent(content);
+  });
 </script>

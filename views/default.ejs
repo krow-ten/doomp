@@ -1,89 +1,86 @@
-<meta name="viewport" content="width=device-width">
-<link rel="manifest" href="/<%= doomp.name %>/manifest.json">
-<% include css %>
+<meta name="viewport" content="width=device-width" />
+<link rel="manifest" href="/<%= doomp.name %>/manifest.json" />
+<%- include('./css') %>
 
-<span class=status>unsaved</span>
+<span class="status">unsaved</span>
 <textarea><%- doomp.content %></textarea>
-<div class='links'></div>
+<div class="links"></div>
 <footer>
-    <a href='/<%= doomp.name%>/list'>list</a>
-    <a href="/<%= doomp.name%>/raw">raw</a>
-    <% if (doomp.protected) { %>
-    <a href="/<%= doomp.name%>/protect">password</a>
-    <a href="/<%= doomp.name%>/logout">logout</a>
-    <% } else { %>
-    <a href="/<%= doomp.name%>/protect" class=protect>protect</a>
-    <% } %>
-    <a href="#" onclick="toggleLinks(); return false;">links</a>
+  <a href="/<%= doomp.name%>/list">list</a>
+  <a href="/<%= doomp.name%>/raw">raw</a>
+  <% if (doomp.protected) { %>
+  <a href="/<%= doomp.name%>/protect">password</a>
+  <a href="/<%= doomp.name%>/logout">logout</a>
+  <% } else { %>
+  <a href="/<%= doomp.name%>/protect" class="protect">protect</a>
+  <% } %>
+  <a href="#" onclick="toggleLinks(); return false;">links</a>
 </footer>
-
 
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="//cdn.jsdelivr.net/taboverride/4.0.2/taboverride.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+<!-- <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script> -->
 <script>
+  var DOOMP = {
+    name: "<%= doomp.name%>",
+    changed: false,
+    currentLength: $("textarea").val().length,
 
-    var DOOMP = {
-        name: '<%= doomp.name%>',
-        changed: false,
-        currentLength: $('textarea').val().length,
-
-        workOutIfChanged: function () {
-            var newLength = $('textarea').val().length;
-            if (newLength != this.currentLength) {
-                this.changed = true
-                this.currentLength = newLength
-                $('.status').slideDown();
-                showLinks();
-            }
-        },
-
-        saveWhenChanged: function () {
-            if (DOOMP.changed) {
-                $.post('/' + DOOMP.name, { content: $('textarea').val() }, function () {
-                    DOOMP.changed = false
-                    $('.status').slideUp();
-                })
-            }
-        }
-    };
-
-    $(function () {
+    workOutIfChanged: function () {
+      var newLength = $("textarea").val().length;
+      if (newLength != this.currentLength) {
+        this.changed = true;
+        this.currentLength = newLength;
+        $(".status").slideDown();
         showLinks();
+      }
+    },
 
-        setInterval(DOOMP.saveWhenChanged, 3000)
-
-
-        $("textarea").keyup(function () {
-            DOOMP.workOutIfChanged()
-            socket.emit('content', { name: DOOMP.name, content: $('textarea').val() })
+    saveWhenChanged: function () {
+      if (DOOMP.changed) {
+        $.post("/" + DOOMP.name, { content: $("textarea").val() }, function () {
+          DOOMP.changed = false;
+          $(".status").slideUp();
         });
+      }
+    },
+  };
 
-        tabOverride.set($("textarea"));
+  $(function () {
+    showLinks();
 
+    setInterval(DOOMP.saveWhenChanged, 3000);
+
+    $("textarea").keyup(function () {
+      DOOMP.workOutIfChanged();
+      //   socket.emit("content", {
+      //     name: DOOMP.name,
+      //     content: $("textarea").val(),
+      //   });
     });
 
-    function showLinks() {
-        $('.links').html('')
+    tabOverride.set($("textarea"));
+  });
 
-        var regexp = /\b(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)[-A-Z0-9+&@#/%=~_|$?!:,.]*[A-Z0-9+&@#\/%=~_|$]/gi
-        var linkPresent = false;
-        while ((match = regexp.exec($('textarea').val())) != null) {
-            linkPresent = true;
-            $('.links').append('<a href="' + match + '">' + match + '</a>')
-        }
+  function showLinks() {
+    $(".links").html("");
 
-        if (linkPresent) {
-            $('.links').animate({ width: 'show' });
-        } else {
-            $('.links').animate({ width: 'hide' });
-        }
-
+    var regexp =
+      /\b(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)[-A-Z0-9+&@#/%=~_|$?!:,.]*[A-Z0-9+&@#\/%=~_|$]/gi;
+    var linkPresent = false;
+    while ((match = regexp.exec($("textarea").val())) != null) {
+      linkPresent = true;
+      $(".links").append('<a href="' + match + '">' + match + "</a>");
     }
 
-    function toggleLinks() {
-        $('.links').animate({ width: 'toggle' });
+    if (linkPresent) {
+      $(".links").animate({ width: "show" });
+    } else {
+      $(".links").animate({ width: "hide" });
     }
+  }
 
-
+  function toggleLinks() {
+    $(".links").animate({ width: "toggle" });
+  }
 </script>
