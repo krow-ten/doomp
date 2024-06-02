@@ -2,9 +2,10 @@
   "name": "doomp",
   "version": "1.0.0",
   "description": "doomp",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node app.js",
+    "dev": "netlify dev",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,12 +19,17 @@
   },
   "homepage": "https://github.com/krow-ten/doomp#readme",
   "dependencies": {
-    "body-parser": "^1.15.2",
+    "@netlify/functions": "^2.7.0",
     "ejs": "^3.1.10",
     "ent": "^2.2.0",
-    "express": "^4.14.0",
-    "express-session": "^1.17.1",
-    "helmet": "^4.1.0",
-    "mongojs": "^3.1.0"
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "mongojs": "^3.1.0",
+    "serverless-http": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.13.0",
+    "netlify-cli": "^17.23.8"
   }
 }

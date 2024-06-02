@@ -17,9 +17,8 @@
   <a href="#" onclick="toggleLinks(); return false;">links</a>
 </footer>
 
-<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="//code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="//cdn.jsdelivr.net/taboverride/4.0.2/taboverride.min.js"></script>
-<!-- <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script> -->
 <script>
   var DOOMP = {
     name: "<%= doomp.name%>",
@@ -53,10 +52,6 @@
 
     $("textarea").keyup(function () {
       DOOMP.workOutIfChanged();
-      //   socket.emit("content", {
-      //     name: DOOMP.name,
-      //     content: $("textarea").val(),
-      //   });
     });
 
     tabOverride.set($("textarea"));

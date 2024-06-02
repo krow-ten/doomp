@@ -4,7 +4,6 @@ const session = require("express-session");
 const ent = require("ent");
 
 const app = express();
-const http = require("http").createServer(app);
 
 app.use(
   require("helmet")({
@@ -174,5 +173,4 @@ function isAuthenticated(session, doomp) {
   return session[doomp.name] == doomp.password;
 }
 
-const port = Number(process.env.PORT || 5000);
-http.listen(port, () => console.log("Listening on " + port));
+module.exports = app;
