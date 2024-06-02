@@ -1,5 +1,5 @@
 [functions]
-  external_node_modules = ["express", "ejs"]
+  external_node_modules = ["express", "ejs", "body-parser", "ent", "express-session"]
   node_bundler = "esbuild"
   directory = "functions/"
 
